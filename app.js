@@ -7,7 +7,6 @@ import {
 getDatabase,
 ref,
 get,
-onValue,
 set
 
 }
@@ -15,10 +14,9 @@ set
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 
-
 // FIREBASE CONFIG
 
-const firebaseConfig={
+const firebaseConfig = {
 
 apiKey:"XXXX",
 
@@ -33,32 +31,23 @@ projectId:"hwarang-1c5dc"
 };
 
 
-const app=initializeApp(firebaseConfig);
+const app = initializeApp(firebaseConfig);
 
-const db=getDatabase(app);
-
-
-let sportiviGlobal=[];
+const db = getDatabase(app);
 
 
 
 // =====================
-// LOAD CATEGORII
+// INCARCA CATEGORII
 // =====================
 
-window.addEventListener(
-
-"load",
-
-async()=>{
+window.addEventListener("load", async ()=>{
 
 const select=
 
-document.getElementById(
+document.getElementById("categorie");
 
-"categorie"
-
-);
+select.innerHTML="Se incarca...";
 
 
 const snapshot=
@@ -88,20 +77,15 @@ select.appendChild(opt);
 });
 
 
-
 incarcaSportivi();
 
-}
-
-);
+});
 
 
 
-// CHANGE EVENTS
+// CHANGE
 
-document
-
-.getElementById("categorie")
+document.getElementById("categorie")
 
 .addEventListener(
 
@@ -111,10 +95,7 @@ incarcaSportivi
 
 );
 
-
-document
-
-.getElementById("proba")
+document.getElementById("proba")
 
 .addEventListener(
 
@@ -127,36 +108,23 @@ incarcaSportivi
 
 
 // =====================
-// LOAD SPORTIVI
+// INCARCARE SPORTIVI
 // =====================
 
 async function incarcaSportivi(){
 
 const categorie=
 
-document.getElementById(
-
-"categorie"
-
-).value;
-
+document.getElementById("categorie").value;
 
 const proba=
 
-document.getElementById(
-
-"proba"
-
-).value;
+document.getElementById("proba").value;
 
 
 const lista=
 
-document.getElementById(
-
-"listaSportivi"
-
-);
+document.getElementById("listaSportivi");
 
 lista.innerHTML="Se incarca...";
 
@@ -165,7 +133,9 @@ const snapshot=
 
 await get(
 
-ref(db,
+ref(
+
+db,
 
 `sportivi/${categorie}`
 
@@ -174,160 +144,30 @@ ref(db,
 );
 
 
-sportiviGlobal=[];
+lista.innerHTML="";
+
+
+if(!snapshot.exists()){
+
+lista.innerHTML="Nu exista sportivi";
+
+return;
+
+}
 
 
 snapshot.forEach(child=>{
 
-sportiviGlobal.push({
+const sportiv=child.val();
 
-id:child.key,
+const id=child.key;
 
-...child.val()
 
-});
+// CREARE DIV
 
-});
-
-
-ascultaPrezenta(
-
-categorie,
-
-proba
-
-);
-
-}
-
-
-
-// =====================
-// LIVE PREZENTA
-// =====================
-
-function ascultaPrezenta(
-
-categorie,
-
-proba
-
-){
-
-onValue(
-
-ref(
-
-db,
-
-`live/prezenta/${categorie}/${proba}`
-
-),
-
-snap=>{
-
-
-let prezenta={};
-
-if(snap.exists())
-
-prezenta=snap.val();
-
-
-deseneazaLista(
-
-categorie,
-
-proba,
-
-prezenta
-
-);
-
-}
-
-);
-
-}
-
-
-
-// =====================
-// DESENEAZA LISTA
-// =====================
-
-function deseneazaLista(
-
-categorie,
-
-proba,
-
-prezenta
-
-){
-
-const lista=
-
-document.getElementById(
-
-"listaSportivi"
-
-);
-
-lista.innerHTML="";
-
-
-let prezenti=0;
-
-
-sportiviGlobal.sort(
-
-(a,b)=>
-
-a.nume.localeCompare(
-
-b.nume
-
-)
-
-);
-
-
-sportiviGlobal.forEach(
-
-sportiv=>{
-
-
-const status=
-
-prezenta[sportiv.id]
-
-?.status;
-
-
-if(status==="prezent")
-
-prezenti++;
-
-
-const div=
-
-document.createElement(
-
-"div"
-
-);
+const div=document.createElement("div");
 
 div.className="sportiv";
-
-
-if(status==="prezent")
-
-div.classList.add("prezent");
-
-if(status==="absent")
-
-div.classList.add("absent");
 
 
 div.innerHTML=`
@@ -346,14 +186,16 @@ ${sportiv.club}
 
 <div>
 
-<button>✔</button>
+<button class="ok">✔</button>
 
-<button>✖</button>
+<button class="nu">✖</button>
 
 </div>
 
 `;
 
+
+// PREZENTA
 
 const prezentaRef=
 
@@ -361,14 +203,12 @@ ref(
 
 db,
 
-`live/prezenta/${categorie}/${proba}/${sportiv.id}`
+`live/prezenta/${categorie}/${proba}/${id}`
 
 );
 
 
-div.children[1]
-
-.children[0]
+div.querySelector(".ok")
 
 .onclick=()=>{
 
@@ -383,9 +223,7 @@ ora:Date.now()
 };
 
 
-div.children[1]
-
-.children[1]
+div.querySelector(".nu")
 
 .onclick=()=>{
 
@@ -403,14 +241,5 @@ ora:Date.now()
 lista.appendChild(div);
 
 });
-
-
-document.getElementById(
-
-"contor"
-
-).innerHTML=
-
-`${prezenti} / ${sportiviGlobal.length} prezenti`;
 
 }
