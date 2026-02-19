@@ -16,7 +16,7 @@ from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 
 
-// CONFIG FIREBASE
+// FIREBASE CONFIG
 
 const firebaseConfig={
 
@@ -41,9 +41,10 @@ const db=getDatabase(app);
 let sportiviGlobal=[];
 
 
-// =======================
-// INCARCA CATEGORII
-// =======================
+
+// =====================
+// LOAD CATEGORII
+// =====================
 
 window.addEventListener(
 
@@ -76,11 +77,7 @@ snapshot.forEach(cat=>{
 
 const opt=
 
-document.createElement(
-
-"option"
-
-);
+document.createElement("option");
 
 opt.value=cat.key;
 
@@ -91,7 +88,6 @@ select.appendChild(opt);
 });
 
 
-// AUTO LOAD
 
 incarcaSportivi();
 
@@ -105,11 +101,7 @@ incarcaSportivi();
 
 document
 
-.getElementById(
-
-"categorie"
-
-)
+.getElementById("categorie")
 
 .addEventListener(
 
@@ -122,11 +114,7 @@ incarcaSportivi
 
 document
 
-.getElementById(
-
-"proba"
-
-)
+.getElementById("proba")
 
 .addEventListener(
 
@@ -138,9 +126,9 @@ incarcaSportivi
 
 
 
-// =======================
-// INCARCARE SPORTIVI
-// =======================
+// =====================
+// LOAD SPORTIVI
+// =====================
 
 async function incarcaSportivi(){
 
@@ -177,9 +165,7 @@ const snapshot=
 
 await get(
 
-ref(
-
-db,
+ref(db,
 
 `sportivi/${categorie}`
 
@@ -193,28 +179,13 @@ sportiviGlobal=[];
 
 snapshot.forEach(child=>{
 
-const sportiv=
-
-child.val();
-
-
-// FILTRU PROBA (CORECT)
-
-if(
-
-sportiv[proba]
-
-){
-
 sportiviGlobal.push({
 
 id:child.key,
 
-...sportiv
+...child.val()
 
 });
-
-}
 
 });
 
@@ -231,9 +202,9 @@ proba
 
 
 
-// =======================
-// PREZENTA LIVE
-// =======================
+// =====================
+// LIVE PREZENTA
+// =====================
 
 function ascultaPrezenta(
 
@@ -281,9 +252,9 @@ prezenta
 
 
 
-// =======================
+// =====================
 // DESENEAZA LISTA
-// =======================
+// =====================
 
 function deseneazaLista(
 
@@ -352,20 +323,11 @@ div.className="sportiv";
 
 if(status==="prezent")
 
-div.classList.add(
-
-"prezent"
-
-);
-
+div.classList.add("prezent");
 
 if(status==="absent")
 
-div.classList.add(
-
-"absent"
-
-);
+div.classList.add("absent");
 
 
 div.innerHTML=`
@@ -443,15 +405,11 @@ lista.appendChild(div);
 });
 
 
-document
-
-.getElementById(
+document.getElementById(
 
 "contor"
 
-)
-
-.innerHTML=
+).innerHTML=
 
 `${prezenti} / ${sportiviGlobal.length} prezenti`;
 
