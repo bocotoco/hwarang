@@ -90,6 +90,73 @@ const categorie=
 
 document.getElementById("categorie").value;
 
+const proba=
+
+document.getElementById("proba").value;
+
+
+const lista=
+
+document.getElementById("listaSportivi");
+
+lista.innerHTML="Se incarca...";
+
+
+const sportiviRef=
+
+ref(db,`sportivi/${categorie}`);
+
+
+onValue(sportiviRef,(snapshot)=>{
+
+sportiviGlobal=[];
+
+
+snapshot.forEach(child=>{
+
+const sportiv=child.val();
+
+
+// FILTRU PROBA
+
+if(
+
+sportiv.probe &&
+
+sportiv.probe[proba]
+
+){
+
+sportiviGlobal.push({
+
+id:child.key,
+
+...sportiv
+
+});
+
+}
+
+});
+
+
+ascultaPrezenta(
+
+categorie,
+
+proba
+
+);
+
+});
+
+};
+
+
+const categorie=
+
+document.getElementById("categorie").value;
+
 
 const lista=
 
@@ -139,8 +206,9 @@ const prezentaRef=
 
 ref(db,
 
-`live/prezenta/${categorie}`);
+`live/prezenta/${categorie}/${proba}/${sportiv.id}
 
+);
 
 onValue(prezentaRef,(snap)=>{
 
