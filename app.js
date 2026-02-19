@@ -6,6 +6,7 @@ import {
 
 getDatabase,
 ref,
+get,
 onValue,
 set
 
@@ -39,23 +40,34 @@ const db=getDatabase(app);
 let sportiviGlobal=[];
 
 
-// ===========================
-// INCARCA AUTOMAT CATEGORII
-// ===========================
 
-window.addEventListener("load",()=>{
+// ========================
+// INCARCA AUTOMAT CATEGORII
+// ========================
+
+window.addEventListener(
+
+"load",
+
+async()=>{
 
 const select=
 
-document.getElementById("categorie");
+document.getElementById(
+
+"categorie"
+
+);
 
 
-const categoriiRef=
+const snapshot=
 
-ref(db,"sportivi");
+await get(
 
+ref(db,"sportivi")
 
-onValue(categoriiRef,(snapshot)=>{
+);
+
 
 select.innerHTML="";
 
@@ -64,7 +76,11 @@ snapshot.forEach(cat=>{
 
 const opt=
 
-document.createElement("option");
+document.createElement(
+
+"option"
+
+);
 
 opt.value=cat.key;
 
@@ -74,47 +90,115 @@ select.appendChild(opt);
 
 });
 
-});
-
-});
 
 
+// AUTO LOAD
 
-// ===========================
-// INCARCARE SPORTIVI
-// ===========================
+incarcaSportivi();
 
-window.incarcaSportivi=function(){
+}
+
+);
+
+
+
+// ========================
+// SCHIMBA CATEGORIE/PROBA
+// ========================
+
+document
+
+.getElementById(
+
+"categorie"
+
+)
+
+.addEventListener(
+
+"change",
+
+incarcaSportivi
+
+);
+
+
+document
+
+.getElementById(
+
+"proba"
+
+)
+
+.addEventListener(
+
+"change",
+
+incarcaSportivi
+
+);
+
+
+
+// ========================
+// INCARCARE SPORTIVI RAPID
+// ========================
+
+async function incarcaSportivi(){
 
 const categorie=
 
-document.getElementById("categorie").value;
+document.getElementById(
+
+"categorie"
+
+).value;
+
 
 const proba=
 
-document.getElementById("proba").value;
+document.getElementById(
+
+"proba"
+
+).value;
 
 
 const lista=
 
-document.getElementById("listaSportivi");
+document.getElementById(
+
+"listaSportivi"
+
+);
 
 lista.innerHTML="Se incarca...";
 
 
-const sportiviRef=
+const snapshot=
 
-ref(db,`sportivi/${categorie}`);
+await get(
 
+ref(
 
-onValue(sportiviRef,(snapshot)=>{
+db,
+
+`sportivi/${categorie}`
+
+)
+
+);
+
 
 sportiviGlobal=[];
 
 
 snapshot.forEach(child=>{
 
-const sportiv=child.val();
+const sportiv=
+
+child.val();
 
 
 // FILTRU PROBA
@@ -148,98 +232,81 @@ proba
 
 );
 
-});
-
-};
-
-
-const categorie=
-
-document.getElementById("categorie").value;
-
-
-const lista=
-
-document.getElementById("listaSportivi");
-
-lista.innerHTML="Se incarca...";
-
-
-const sportiviRef=
-
-ref(db,`sportivi/${categorie}`);
-
-
-onValue(sportiviRef,(snapshot)=>{
-
-sportiviGlobal=[];
-
-
-snapshot.forEach(child=>{
-
-sportiviGlobal.push({
-
-id:child.key,
-
-...child.val()
-
-});
-
-});
-
-
-ascultaPrezenta(categorie);
-
-});
-
-};
+}
 
 
 
-// ===========================
+// ========================
 // PREZENTA LIVE
-// ===========================
+// ========================
 
-function ascultaPrezenta(categorie){
+function ascultaPrezenta(
+
+categorie,
+
+proba
+
+){
 
 const prezentaRef=
 
-ref(db,
+ref(
 
-`live/prezenta/${categorie}/${proba}/${sportiv.id}
+db,
+
+`live/prezenta/${categorie}/${proba}`
 
 );
 
-onValue(prezentaRef,(snap)=>{
+
+onValue(
+
+prezentaRef,
+
+snap=>{
+
 
 let prezenta={};
 
-if(snap.exists())
 
-prezenta=snap.val();
+if(
+
+snap.exists()
+
+)
+
+prezenta=
+
+snap.val();
 
 
 deseneazaLista(
 
 categorie,
 
+proba,
+
 prezenta
 
 );
 
-});
+}
+
+);
 
 }
 
 
 
-// ===========================
+// ========================
 // DESENEAZA LISTA
-// ===========================
+// ========================
 
 function deseneazaLista(
 
 categorie,
+
+proba,
 
 prezenta
 
@@ -256,12 +323,52 @@ document.getElementById(
 lista.innerHTML="";
 
 
+let prezenti=0;
+
+const total=
+
+sportiviGlobal.length;
+
+
+// SORTARE
+
 sportiviGlobal.sort(
 
-(a,b)=>a.nume.localeCompare(b.nume)
+(a,b)=>{
+
+const sa=
+
+prezenta[a.id]?.status;
+
+const sb=
+
+prezenta[b.id]?.status;
+
+
+if(sa==="prezent")
+
+return -1;
+
+if(sb==="prezent")
+
+return 1;
+
+
+return a.nume
+
+.localeCompare(
+
+b.nume
 
 );
 
+}
+
+);
+
+
+
+// CREARE SPORTIVI
 
 sportiviGlobal.forEach(
 
@@ -270,23 +377,48 @@ sportiv=>{
 
 const status=
 
-prezenta[sportiv.id]?.status;
+prezenta[sportiv.id]
+
+?.status;
+
+
+if(
+
+status==="prezent"
+
+)
+
+prezenti++;
 
 
 const div=
 
-document.createElement("div");
+document.createElement(
+
+"div"
+
+);
 
 div.className="sportiv";
 
 
 if(status==="prezent")
 
-div.classList.add("prezent");
+div.classList.add(
+
+"prezent"
+
+);
+
 
 if(status==="absent")
 
-div.classList.add("absent");
+div.classList.add(
+
+"absent"
+
+);
+
 
 
 div.innerHTML=`
@@ -322,47 +454,68 @@ ${sportiv.club}
 `;
 
 
+
 const prezentaRef=
 
 ref(
 
 db,
 
-`live/prezenta/${categorie}/${sportiv.id}`
+`live/prezenta/${categorie}/${proba}/${sportiv.id}`
 
 );
 
 
 // PREZENT
 
-div.querySelector(".ok")
+div.querySelector(
+
+".ok"
+
+)
 
 .onclick=()=>{
 
-set(prezentaRef,{
+set(
+
+prezentaRef,
+
+{
 
 status:"prezent",
 
 ora:Date.now()
 
-});
+}
+
+);
 
 };
 
 
 // ABSENT
 
-div.querySelector(".nu")
+div.querySelector(
+
+".nu"
+
+)
 
 .onclick=()=>{
 
-set(prezentaRef,{
+set(
+
+prezentaRef,
+
+{
 
 status:"absent",
 
 ora:Date.now()
 
-});
+}
+
+);
 
 };
 
@@ -370,5 +523,19 @@ ora:Date.now()
 lista.appendChild(div);
 
 });
+
+
+
+document
+
+.getElementById(
+
+"contor"
+
+)
+
+.innerHTML=
+
+`${prezenti} / ${total} prezenti`;
 
 }
