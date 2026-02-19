@@ -15,7 +15,8 @@ set
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 
-// FIREBASE CONFIG
+
+// CONFIG FIREBASE
 
 const firebaseConfig={
 
@@ -40,10 +41,9 @@ const db=getDatabase(app);
 let sportiviGlobal=[];
 
 
-
-// ========================
-// INCARCA AUTOMAT CATEGORII
-// ========================
+// =======================
+// INCARCA CATEGORII
+// =======================
 
 window.addEventListener(
 
@@ -91,7 +91,6 @@ select.appendChild(opt);
 });
 
 
-
 // AUTO LOAD
 
 incarcaSportivi();
@@ -102,9 +101,7 @@ incarcaSportivi();
 
 
 
-// ========================
-// SCHIMBA CATEGORIE/PROBA
-// ========================
+// CHANGE EVENTS
 
 document
 
@@ -141,9 +138,9 @@ incarcaSportivi
 
 
 
-// ========================
-// INCARCARE SPORTIVI RAPID
-// ========================
+// =======================
+// INCARCARE SPORTIVI
+// =======================
 
 async function incarcaSportivi(){
 
@@ -201,13 +198,11 @@ const sportiv=
 child.val();
 
 
-// FILTRU PROBA
+// FILTRU PROBA (CORECT)
 
 if(
 
-sportiv.probe &&
-
-sportiv.probe[proba]
+sportiv[proba]
 
 ){
 
@@ -236,9 +231,9 @@ proba
 
 
 
-// ========================
+// =======================
 // PREZENTA LIVE
-// ========================
+// =======================
 
 function ascultaPrezenta(
 
@@ -248,7 +243,7 @@ proba
 
 ){
 
-const prezentaRef=
+onValue(
 
 ref(
 
@@ -256,28 +251,16 @@ db,
 
 `live/prezenta/${categorie}/${proba}`
 
-);
-
-
-onValue(
-
-prezentaRef,
+),
 
 snap=>{
 
 
 let prezenta={};
 
+if(snap.exists())
 
-if(
-
-snap.exists()
-
-)
-
-prezenta=
-
-snap.val();
+prezenta=snap.val();
 
 
 deseneazaLista(
@@ -298,9 +281,9 @@ prezenta
 
 
 
-// ========================
+// =======================
 // DESENEAZA LISTA
-// ========================
+// =======================
 
 function deseneazaLista(
 
@@ -325,50 +308,19 @@ lista.innerHTML="";
 
 let prezenti=0;
 
-const total=
-
-sportiviGlobal.length;
-
-
-// SORTARE
 
 sportiviGlobal.sort(
 
-(a,b)=>{
+(a,b)=>
 
-const sa=
-
-prezenta[a.id]?.status;
-
-const sb=
-
-prezenta[b.id]?.status;
-
-
-if(sa==="prezent")
-
-return -1;
-
-if(sb==="prezent")
-
-return 1;
-
-
-return a.nume
-
-.localeCompare(
+a.nume.localeCompare(
 
 b.nume
 
-);
-
-}
+)
 
 );
 
-
-
-// CREARE SPORTIVI
 
 sportiviGlobal.forEach(
 
@@ -382,11 +334,7 @@ prezenta[sportiv.id]
 ?.status;
 
 
-if(
-
-status==="prezent"
-
-)
+if(status==="prezent")
 
 prezenti++;
 
@@ -420,7 +368,6 @@ div.classList.add(
 );
 
 
-
 div.innerHTML=`
 
 <div>
@@ -437,22 +384,13 @@ ${sportiv.club}
 
 <div>
 
-<button class="ok">
+<button>✔</button>
 
-✔
-
-</button>
-
-<button class="nu">
-
-✖
-
-</button>
+<button>✖</button>
 
 </div>
 
 `;
-
 
 
 const prezentaRef=
@@ -466,56 +404,36 @@ db,
 );
 
 
-// PREZENT
+div.children[1]
 
-div.querySelector(
-
-".ok"
-
-)
+.children[0]
 
 .onclick=()=>{
 
-set(
-
-prezentaRef,
-
-{
+set(prezentaRef,{
 
 status:"prezent",
 
 ora:Date.now()
 
-}
-
-);
+});
 
 };
 
 
-// ABSENT
+div.children[1]
 
-div.querySelector(
-
-".nu"
-
-)
+.children[1]
 
 .onclick=()=>{
 
-set(
-
-prezentaRef,
-
-{
+set(prezentaRef,{
 
 status:"absent",
 
 ora:Date.now()
 
-}
-
-);
+});
 
 };
 
@@ -523,7 +441,6 @@ ora:Date.now()
 lista.appendChild(div);
 
 });
-
 
 
 document
@@ -536,6 +453,6 @@ document
 
 .innerHTML=
 
-`${prezenti} / ${total} prezenti`;
+`${prezenti} / ${sportiviGlobal.length} prezenti`;
 
 }
