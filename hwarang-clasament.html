@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Clasament Hwarang</title>
+
+<style>
+
+body{
+font-family:Arial;
+max-width:700px;
+margin:auto;
+padding:20px;
+background:#f5f5f5;
+}
+
+h2{
+text-align:center;
+}
+
+.sportiv{
+background:white;
+padding:12px;
+margin-bottom:8px;
+border-radius:8px;
+box-shadow:0 2px 4px rgba(0,0,0,.1);
+}
+
+.loc{
+font-weight:bold;
+font-size:18px;
+}
+
+.club{
+font-size:13px;
+color:gray;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h2>Clasament Hwarang – Proba combinata</h2>
+
+<div id="lista"></div>
+
+
+<script type="module">
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import { getDatabase, ref, get }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+
+const firebaseConfig = {
+
+apiKey:"XXXX",
+
+authDomain:"hwarang-1c5dc.firebaseapp.com",
+
+databaseURL:"https://hwarang-1c5dc-default-rtdb.firebaseio.com",
+
+projectId:"hwarang-1c5dc"
+
+};
+
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const lista = document.getElementById("lista");
+
+
+const snapshot = await get(ref(db,"clasament_combinat"));
+
+snapshot.forEach(categorie=>{
+
+categorie.forEach(sportiv=>{
+
+const data = sportiv.val();
+
+if(data.club && data.club.includes("Hwarang")){
+
+const div=document.createElement("div");
+
+div.className="sportiv";
+
+div.innerHTML=`
+
+<div class="loc">Loc ${data.loc}</div>
+<b>${data.nume}</b>
+<div class="club">${data.club}</div>
+<div>${categorie.key}</div>
+
+`;
+
+lista.appendChild(div);
+
+}
+
+});
+
+});
+
+</script>
+
+</body>
+
+</html>
