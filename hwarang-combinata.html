@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Clasament Hwarang</title>
+
+<style>
+
+body{
+font-family:Arial;
+max-width:800px;
+margin:auto;
+padding:20px;
+background:#f5f5f5;
+}
+
+h2{
+text-align:center;
+}
+
+.sportiv{
+background:white;
+padding:12px;
+margin-bottom:8px;
+border-radius:8px;
+box-shadow:0 2px 4px rgba(0,0,0,.1);
+}
+
+.loc{
+font-weight:bold;
+font-size:18px;
+}
+
+.club{
+font-size:13px;
+color:gray;
+}
+
+.categorie{
+font-size:13px;
+color:#1a73e8;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h2>Sportivi Hwarang – Clasament combinat</h2>
+
+<div id="lista">Se încarcă...</div>
+
+<script type="module">
+
+import { initializeApp } from
+"https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+
+import { getDatabase, ref, get } from
+"https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+
+const firebaseConfig = {
+apiKey: "AIzaSyAaYXqYOOfRxNplF5rhQN6Cr2qTkGPLji4",
+authDomain: "hwarang-1c5dc.firebaseapp.com",
+databaseURL: "https://hwarang-1c5dc-default-rtdb.firebaseio.com",
+projectId: "hwarang-1c5dc"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const lista = document.getElementById("lista");
+
+
+const sportiviSnap = await get(ref(db,"sportivi"));
+const compSnap = await get(ref(db,"competitie"));
+
+lista.innerHTML="";
+
+sportiviSnap.forEach(cat => {
+
+const categorie = cat.key;
+
+const sportivi = cat.val();
+const rezultate = compSnap.val()?.[categorie];
+
+if(!rezultate) return;
+
+let clubMap = {};
+
+Object.values(sportivi).forEach(s => {
+
+if(s.nume) clubMap[s.nume] = s.club;
+
+});
+
+
+let arr=[];
+
+Object.keys(rezultate).forEach(nume=>{
+
+let d = rezultate[nume];
+
+let tull = calcTull(d.tull);
+let tehnici = parseFloat(d.tehnici || 0);
+let kick = parseFloat(d.speed_kick || 0);
+let punch = parseFloat(d.speed_punch || 0);
+let dina = calcDina(d.dinamometru);
+
+arr.push({
+
+nume:nume,
+club:clubMap[nume] || "",
+tull,
+tehnici,
+kick,
+punch,
+dina
+
+});
+
+});
+
+
+calculeaza(arr,"tull","tullRank","tullPts");
+calculeaza(arr,"tehnici","tehniciRank","tehniciPts");
+calculeaza(arr,"dina","dinaRank","dinaPts");
+calculeaza(arr,"kick","kickRank","kickPts");
+calculeaza(arr,"punch","punchRank","punchPts");
+
+
+arr.forEach(s=>{
+
+s.total =
+s.tullPts +
+s.tehniciPts +
+s.dinaPts +
+s.kickPts +
+s.punchPts;
+
+});
+
+
+arr.sort((a,b)=>b.total-a.total);
+
+
+arr.forEach((s,i)=>{
+
+if(s.club && s.club.includes("Hwarang")){
+
+const div=document.createElement("div");
+
+div.className="sportiv";
+
+div.innerHTML=`
+
+<div class="loc">Loc ${i+1}</div>
+<b>${s.nume}</b>
+<div class="club">${s.club}</div>
+<div class="categorie">${categorie}</div>
+
+`;
+
+lista.appendChild(div);
+
+}
+
+});
+
+});
+
+
+function calcTull(data){
+
+if(!data) return 0;
+
+let v=Object.values(data).map(Number);
+
+return v.reduce((a,b)=>a+b,0)/v.length;
+
+}
+
+
+function calcDina(d){
+
+if(!d) return 0;
+
+let p1=parseFloat(d.p1||0);
+let p2=parseFloat(d.p2||0);
+let k1=parseFloat(d.k1||0);
+let k2=parseFloat(d.k2||0);
+
+return (Math.max(p1,p2)+Math.max(k1,k2))/2;
+
+}
+
+
+function calculeaza(arr,val,rank,pts){
+
+arr.sort((a,b)=>b[val]-a[val]);
+
+for(let i=0;i<arr.length;i++){
+
+arr[i][rank]=i+1;
+
+if(arr[i][rank]==1) arr[i][pts]=5;
+else if(arr[i][rank]==2) arr[i][pts]=4;
+else arr[i][pts]=3;
+
+if(arr[i][val]==0) arr[i][pts]=0;
+
+}
+
+}
+
+</script>
+
+</body>
+</html>
