@@ -1,14 +1,44 @@
 <!DOCTYPE html>
 <html>
-
 <head>
+
 <meta charset="UTF-8">
-<title>Medalii Hwarang</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Rezultate Hwarang</title>
+
+<style>
+
+body{
+font-family:Arial;
+max-width:600px;
+margin:auto;
+padding:10px;
+background:#f5f5f5;
+}
+
+.sportiv{
+background:white;
+padding:12px;
+margin-bottom:8px;
+border-radius:8px;
+box-shadow:0 2px 4px rgba(0,0,0,.1);
+}
+
+.club{
+font-size:13px;
+color:gray;
+}
+
+</style>
+
 </head>
 
 <body>
 
-<h2>Sportivii Hwarang cu medalii</h2>
+<h2>Sportivi Hwarang</h2>
+
+<select id="categorie"></select>
 
 <div id="lista"></div>
 
@@ -24,7 +54,7 @@ const firebaseConfig = {
 
 apiKey:"XXXX",
 
-authDomain:"XXXX",
+authDomain:"hwarang-1c5dc.firebaseapp.com",
 
 databaseURL:"https://hwarang-1c5dc-default-rtdb.firebaseio.com",
 
@@ -35,33 +65,63 @@ projectId:"hwarang-1c5dc"
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
+const select = document.getElementById("categorie");
 const lista = document.getElementById("lista");
 
-const snapshot = await get(ref(db,"rezultate"));
 
-snapshot.forEach(proba=>{
+// INCARCA CATEGORII
 
-proba.forEach(categorie=>{
+const snapshot = await get(ref(db,"sportivi"));
 
-categorie.forEach(sportiv=>{
+snapshot.forEach(cat=>{
 
-const data = sportiv.val();
+const opt = document.createElement("option");
 
-if(data.club && data.club.includes("Hwarang")){
+opt.value = cat.key;
+opt.textContent = cat.key;
 
-const div=document.createElement("div");
+select.appendChild(opt);
 
-div.innerHTML = data.nume + " - loc " + data.loc;
+});
+
+loadSportivi();
+
+
+// SCHIMBA CATEGORIE
+
+select.addEventListener("change", loadSportivi);
+
+
+// INCARCA SPORTIVI
+
+async function loadSportivi(){
+
+const categorie = select.value;
+
+lista.innerHTML="Se incarca...";
+
+const snap = await get(ref(db,"sportivi/"+categorie));
+
+lista.innerHTML="";
+
+snap.forEach(child=>{
+
+const sportiv = child.val();
+
+const div = document.createElement("div");
+
+div.className="sportiv";
+
+div.innerHTML = `
+<b>${sportiv.nume}</b>
+<div class="club">${sportiv.club}</div>
+`;
 
 lista.appendChild(div);
 
+});
+
 }
-
-});
-
-});
-
-});
 
 </script>
 
